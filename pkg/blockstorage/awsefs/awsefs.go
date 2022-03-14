@@ -555,6 +555,24 @@ func (e *efs) SnapshotsList(ctx context.Context, tags map[string]string) ([]*blo
 	return result, nil
 }
 
+func (e *efs) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	result := make([]*blockstorage.Snapshot, 0)
+	for resp, req := emptyResponseRequestForBackups(); resp.NextToken != nil; req.NextToken = resp.NextToken {
+		var err error
+		req.SetBackupVaultName(e.backupVaultName)
+		resp, err = e.ListRecoveryPointsByBackupVaultWithContext(ctx, req)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to list recovery points by vault")
+		}
+		snaps, err := e.snapshotsFromRecoveryPoints(ctx, resp.RecoveryPoints)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to get snapshots from recovery points")
+		}
+		result = append(result, blockstorage.FilterSnapshotsWithTags(snaps, tags)...)
+	}
+	return result, nil
+}
+
 func (e *efs) snapshotsFromRecoveryPoints(ctx context.Context, rps []*backup.RecoveryPointByBackupVault) ([]*blockstorage.Snapshot, error) {
 	result := make([]*blockstorage.Snapshot, 0)
 	for _, rp := range rps {

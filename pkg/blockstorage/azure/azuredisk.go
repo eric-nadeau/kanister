@@ -468,6 +468,26 @@ func (s *AdStorage) SnapshotsList(ctx context.Context, tags map[string]string) (
 	return snaps, nil
 }
 
+func (s *AdStorage) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	var snaps []*blockstorage.Snapshot
+	// (ilya): It looks like azure doesn't support search by tags
+	// List does listing per Subscription
+	for snapList, err := s.azCli.SnapshotsClient.ListComplete(ctx); snapList.NotDone(); err = snapList.Next() {
+		if err != nil {
+			return nil, errors.Wrap(err, "SnapshotsClient.List in SnapshotsList")
+		}
+		snap := snapList.Value()
+		k10Snap, err := s.SnapshotParse(ctx, snap)
+		if err != nil {
+			log.WithError(err).Print("Incorrect Snaphost type", field.M{"SnapshotID": snap.ID})
+			continue
+		}
+		snaps = append(snaps, k10Snap)
+	}
+	snaps = blockstorage.FilterSnapshotsWithTags(snaps, blockstorage.SanitizeTags(tags))
+	return snaps, nil
+}
+
 func (s *AdStorage) VolumeCreateFromSnapshot(ctx context.Context, snapshot blockstorage.Snapshot, tags map[string]string) (*blockstorage.Volume, error) {
 	// Incorporate pre-existing tags if overrides don't already exist
 	// in provided tags

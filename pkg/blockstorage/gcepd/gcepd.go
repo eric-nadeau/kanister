@@ -351,6 +351,23 @@ func (s *GpdStorage) SnapshotsList(ctx context.Context, tags map[string]string) 
 	return snaps, nil
 }
 
+// SnapshotsList is part of blockstorage.Provider. It filters on tags.
+func (s *GpdStorage) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	var snaps []*blockstorage.Snapshot
+	fltrs := blockstorage.MapToString(blockstorage.SanitizeTags(tags), " AND ", ":", "labels.")
+	req := s.service.Snapshots.List(s.project).Filter(fltrs)
+	if err := req.Pages(ctx, func(page *compute.SnapshotList) error {
+		for _, snapshot := range page.Items {
+			snap := s.snapshotParse(ctx, snapshot)
+			snaps = append(snaps, snap)
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return snaps, nil
+}
+
 // VolumeCreateFromSnapshot is part of blockstorage.Provider
 func (s *GpdStorage) VolumeCreateFromSnapshot(ctx context.Context, snapshot blockstorage.Snapshot, tags map[string]string) (*blockstorage.Volume, error) {
 	snap, err := s.service.Snapshots.Get(s.project, snapshot.ID).Context(ctx).Do()

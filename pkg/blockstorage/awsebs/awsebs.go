@@ -18,6 +18,7 @@ package awsebs
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -220,6 +221,35 @@ func (s *EbsStorage) SnapshotsList(ctx context.Context, tags map[string]string) 
 
 	dsi.SetFilters(fltrs)
 	dso, err := s.Ec2Cli.DescribeSnapshotsWithContext(ctx, dsi)
+	fmt.Println("SnapshotsList, dso.NextToken", dso.NextToken)
+	if err != nil {
+		return nil, err
+	}
+	for _, snap := range dso.Snapshots {
+		snaps = append(snaps, s.snapshotParse(ctx, snap))
+	}
+	return snaps, nil
+}
+
+// SnapshotsList is part of blockstorage.Provider
+func (s *EbsStorage) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	fmt.Println("SnapshotsListWInput")
+	var snaps []*blockstorage.Snapshot
+	var fltrs []*ec2.Filter
+	var maxNum int64 = 10
+	dsi := &ec2.DescribeSnapshotsInput{
+		MaxResults: &maxNum,
+	}
+	fmt.Println("SnapshotsListWInput, dsi.MaxResults", dsi.MaxResults)
+	for k, v := range tags {
+		fltr := ec2.Filter{Name: aws.String("tag:" + k), Values: []*string{&v}}
+		fltrs = append(fltrs, &fltr)
+	}
+
+	dsi.SetFilters(fltrs)
+	fmt.Println("SnapshotsListWInput, dsi.MaxResults after SetFilter", dsi.MaxResults)
+	dso, err := s.Ec2Cli.DescribeSnapshotsWithContext(ctx, dsi)
+	fmt.Println("SnapshotsListWInput, dso.NextToken", dso.NextToken)
 	if err != nil {
 		return nil, err
 	}

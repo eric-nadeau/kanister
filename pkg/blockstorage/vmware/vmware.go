@@ -584,6 +584,36 @@ func (p *FcdProvider) SnapshotsList(ctx context.Context, tags map[string]string)
 	return snapshots, nil
 }
 
+// SnapshotsList is part of blockstorage.Provider
+func (p *FcdProvider) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	if p.categoryID == "" {
+		log.Debug().Print("vSphere snapshot tagging is disabled (categoryID not set). Cannot list snapshots")
+		return nil, nil
+	}
+
+	categoryTags, err := p.tagManager.GetTagsForCategory(ctx, p.categoryID)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to list tags")
+	}
+
+	snapshotIDs, err := p.getSnapshotIDsFromTags(categoryTags, tags)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to get snapshotIDs from tags")
+	}
+
+	var snapshots []*blockstorage.Snapshot
+	if len(snapshotIDs) > 0 {
+		for _, snapshotID := range snapshotIDs {
+			snapshot, err := p.SnapshotGet(ctx, snapshotID)
+			if err != nil {
+				return nil, err
+			}
+			snapshots = append(snapshots, snapshot)
+		}
+	}
+	return snapshots, nil
+}
+
 func (p *FcdProvider) getTagsFromSnapshotID(categoryTags []vapitags.Tag, fullSnapshotID string) ([]*blockstorage.KeyValue, error) {
 	tags := map[string]string{}
 	for _, catTag := range categoryTags {

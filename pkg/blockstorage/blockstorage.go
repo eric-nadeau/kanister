@@ -42,6 +42,7 @@ type Provider interface {
 	SetTags(ctx context.Context, resource interface{}, tags map[string]string) error
 	VolumesList(ctx context.Context, tags map[string]string, zone string) ([]*Volume, error)
 	SnapshotsList(ctx context.Context, tags map[string]string) ([]*Snapshot, error)
+	SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*Snapshot, error)
 }
 
 // RestoreTargeter implements the SnapshotRestoreTargets method

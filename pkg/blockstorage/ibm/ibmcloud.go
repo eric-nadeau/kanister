@@ -209,6 +209,21 @@ func (s *ibmCloud) SnapshotsList(ctx context.Context, tags map[string]string) ([
 	return snaps, nil
 }
 
+func (s *ibmCloud) SnapshotsListWInput(ctx context.Context, tags map[string]string) ([]*blockstorage.Snapshot, error) {
+	var snaps []*blockstorage.Snapshot
+	// IBM doens't support tag for snapshot list.
+	// Getting all of them
+	ibmsnaps, err := s.cli.Service.ListSnapshots()
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to list Snapshots")
+	}
+
+	for _, snap := range ibmsnaps {
+		snaps = append(snaps, s.snapshotParse(ctx, snap))
+	}
+	return snaps, nil
+}
+
 // SnapshotCopy copies snapshot 'from' to 'to'. Follows aws restrictions regarding encryption;
 // i.e., copying unencrypted to encrypted snapshot is allowed but not vice versa.
 func (s *ibmCloud) SnapshotCopy(ctx context.Context, from, to blockstorage.Snapshot) (*blockstorage.Snapshot, error) {
