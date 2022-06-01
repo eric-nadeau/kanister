@@ -16,6 +16,7 @@ package kube
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -62,6 +63,7 @@ type PodOptions struct {
 	Resources          v1.ResourceRequirements
 	RestartPolicy      v1.RestartPolicy
 	OwnerReferences    []metav1.OwnerReference
+	BlockDevice        bool
 }
 
 // CreatePod creates a pod with a single container based on the specified image
@@ -91,6 +93,16 @@ func CreatePod(ctx context.Context, cli kubernetes.Interface, opts *PodOptions) 
 	}
 
 	volumeMounts, podVolumes := createVolumeSpecs(opts.Volumes)
+	deviceMounts := []v1.VolumeDevice{}
+	if opts.BlockDevice {
+		// TODO: Handle both mounts simultaneously
+		volumeMounts = []v1.VolumeMount{}
+		for pvc, mountPath := range opts.Volumes {
+			podVolName := fmt.Sprintf("vol-%s", pvc)
+			// TODO: handle multiple mounts
+			deviceMounts = append(deviceMounts, v1.VolumeDevice{Name: podVolName, DevicePath: mountPath})
+		}
+	}
 	defaultSpecs := v1.PodSpec{
 		Containers: []v1.Container{
 			{
@@ -99,6 +111,7 @@ func CreatePod(ctx context.Context, cli kubernetes.Interface, opts *PodOptions) 
 				Command:         opts.Command,
 				ImagePullPolicy: v1.PullPolicy(v1.PullIfNotPresent),
 				VolumeMounts:    volumeMounts,
+				VolumeDevices:   deviceMounts,
 				Resources:       opts.Resources,
 			},
 		},
