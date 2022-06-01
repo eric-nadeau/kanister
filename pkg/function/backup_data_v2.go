@@ -41,7 +41,7 @@ const (
 )
 
 func init() {
-	_ = kanister.Register(&backupDataV2Func{}) // nolint: errcheck
+	_ = kanister.RegisterVersion(&backupDataFunc{}, "v1.0.0-alpha") // nolint: errcheck
 }
 
 var _ kanister.Func = (*backupDataV2Func)(nil)
