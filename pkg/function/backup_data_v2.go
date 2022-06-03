@@ -41,7 +41,7 @@ const (
 )
 
 func init() {
-	_ = kanister.Register(&backupDataV2Func{}) // nolint: errcheck
+	_ = kanister.RegisterVersion(&backupDataV2Func{}, "v1.0.0-alpha") // nolint: errcheck
 }
 
 var _ kanister.Func = (*backupDataV2Func)(nil)
@@ -140,7 +140,7 @@ func (*backupDataV2Func) Exec(ctx context.Context, tp param.TemplateParams, args
 		BackupDataOutputBackupID:           snapInfo.SnapshotID,
 		BackupDataOutputBackupSize:         humanize.Bytes(uint64(logSize)),
 		BackupDataOutputBackupPhysicalSize: humanize.Bytes(uint64(phySize)),
-		FunctionOutputVersion:              kanister.DefaultVersion,
+		FunctionOutputVersion:              "v1.0.0-alpha",
 	}
 	return output, nil
 }
