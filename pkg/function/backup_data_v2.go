@@ -49,7 +49,7 @@ var _ kanister.Func = (*backupDataV2Func)(nil)
 type backupDataV2Func struct{}
 
 func (*backupDataV2Func) Name() string {
-	return BackupDataV2FuncName
+	return BackupDataFuncName
 }
 
 func (*backupDataV2Func) RequiredArgs() []string {
