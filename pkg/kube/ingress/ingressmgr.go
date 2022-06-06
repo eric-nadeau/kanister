@@ -17,7 +17,6 @@ package ingress
 import (
 	"context"
 
-	"github.com/pkg/errors"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	netv1 "k8s.io/api/networking/v1"
 	netv1beta1 "k8s.io/api/networking/v1beta1"
@@ -55,7 +54,7 @@ type Manager interface {
 func NewManager(ctx context.Context, kubeCli kubernetes.Interface) (Manager, error) {
 	exists, err := kube.IsResAvailableInGroupVersion(ctx, kubeCli.Discovery(), netv1.GroupName, netv1.SchemeGroupVersion.Version, ingressRes)
 	if err != nil {
-		return nil, errors.Errorf("Failed to call discovery APIs: %v", err)
+		return nil, err
 	}
 	if exists {
 		return NewNetworkingV1(kubeCli), nil
@@ -63,7 +62,7 @@ func NewManager(ctx context.Context, kubeCli kubernetes.Interface) (Manager, err
 
 	exists, err = kube.IsResAvailableInGroupVersion(ctx, kubeCli.Discovery(), extensionsv1beta1.GroupName, extensionsv1beta1.SchemeGroupVersion.Version, ingressRes)
 	if err != nil {
-		return nil, errors.Errorf("Failed to call discovery APIs: %v", err)
+		return nil, err
 	}
 	if exists {
 		return NewExtensionsV1beta1(kubeCli), nil
@@ -71,7 +70,7 @@ func NewManager(ctx context.Context, kubeCli kubernetes.Interface) (Manager, err
 
 	exists, err = kube.IsResAvailableInGroupVersion(ctx, kubeCli.Discovery(), netv1beta1.GroupName, netv1beta1.SchemeGroupVersion.Version, ingressRes)
 	if err != nil {
-		return nil, errors.Errorf("Failed to call discovery APIs: %v", err)
+		return nil, err
 	}
 	if exists {
 		return NewNetworkingV1beta1(kubeCli), nil
