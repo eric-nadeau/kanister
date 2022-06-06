@@ -32,8 +32,6 @@ import (
 )
 
 const (
-	// BackupDataV2FuncName gives the name of the function
-	BackupDataV2FuncName = "BackupDataV2"
 	// HostNameOption is the key for passing in hostname through Options map
 	HostNameOption = "hostName"
 	// UserNameOption is the key for passing in username through Options map
@@ -41,18 +39,18 @@ const (
 )
 
 func init() {
-	_ = kanister.RegisterVersion(&backupDataV2Func{}, "v1.0.0-alpha") // nolint: errcheck
+	_ = kanister.RegisterVersion(&backupDataUsingKopiaFunc{}, kanister.KopiaVersion) // nolint: errcheck
 }
 
-var _ kanister.Func = (*backupDataV2Func)(nil)
+var _ kanister.Func = (*backupDataUsingKopiaFunc)(nil)
 
-type backupDataV2Func struct{}
+type backupDataUsingKopiaFunc struct{}
 
-func (*backupDataV2Func) Name() string {
+func (*backupDataUsingKopiaFunc) Name() string {
 	return BackupDataFuncName
 }
 
-func (*backupDataV2Func) RequiredArgs() []string {
+func (*backupDataUsingKopiaFunc) RequiredArgs() []string {
 	return []string{
 		BackupDataNamespaceArg,
 		BackupDataPodArg,
@@ -63,7 +61,7 @@ func (*backupDataV2Func) RequiredArgs() []string {
 	}
 }
 
-func (*backupDataV2Func) Arguments() []string {
+func (*backupDataUsingKopiaFunc) Arguments() []string {
 	return []string{
 		BackupDataNamespaceArg,
 		BackupDataPodArg,
@@ -74,7 +72,7 @@ func (*backupDataV2Func) Arguments() []string {
 	}
 }
 
-func (*backupDataV2Func) Exec(ctx context.Context, tp param.TemplateParams, args map[string]interface{}) (map[string]interface{}, error) {
+func (*backupDataUsingKopiaFunc) Exec(ctx context.Context, tp param.TemplateParams, args map[string]interface{}) (map[string]interface{}, error) {
 	var namespace, pod, container, includePath, backupArtifactPrefix, encryptionKey string
 	var err error
 	if err = Arg(args, BackupDataNamespaceArg, &namespace); err != nil {
@@ -112,7 +110,7 @@ func (*backupDataV2Func) Exec(ctx context.Context, tp param.TemplateParams, args
 
 	ctx = field.Context(ctx, consts.PodNameKey, pod)
 	ctx = field.Context(ctx, consts.ContainerNameKey, container)
-	snapInfo, err := backupDataV2(
+	snapInfo, err := backupDataUsingKopia(
 		ctx,
 		cli,
 		namespace,
@@ -140,12 +138,12 @@ func (*backupDataV2Func) Exec(ctx context.Context, tp param.TemplateParams, args
 		BackupDataOutputBackupID:           snapInfo.SnapshotID,
 		BackupDataOutputBackupSize:         humanize.Bytes(uint64(logSize)),
 		BackupDataOutputBackupPhysicalSize: humanize.Bytes(uint64(phySize)),
-		FunctionOutputVersion:              "v1.0.0-alpha",
+		FunctionOutputVersion:              kanister.KopiaVersion,
 	}
 	return output, nil
 }
 
-func backupDataV2(
+func backupDataUsingKopia(
 	ctx context.Context,
 	cli kubernetes.Interface,
 	namespace,
