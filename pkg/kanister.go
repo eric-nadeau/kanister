@@ -26,7 +26,7 @@ import (
 
 const (
 	DefaultVersion = "v0.0.0"
-	KopiaVersion   = "v1.0.0-alpha"
+	KopiaVersion   = "v1.0.0-beta"
 )
 
 var (
