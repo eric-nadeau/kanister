@@ -19,7 +19,7 @@ require (
 	github.com/IBM/ibmcloud-storage-volume-lib v1.0.2-beta02.0.20190828145158-1da4543a60af
 	github.com/Masterminds/semver v1.5.0
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/aws/aws-sdk-go v1.44.22
+	github.com/aws/aws-sdk-go v1.44.32
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-openapi/strfmt v0.19.3
 	github.com/go-sql-driver/mysql v1.6.0
@@ -40,7 +40,7 @@ require (
 	github.com/openshift/api v0.0.0-20200526144822-34f54f12813a
 	github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/vmware/govmomi v0.27.4
