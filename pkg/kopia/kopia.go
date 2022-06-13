@@ -241,7 +241,7 @@ func SnapshotCreateCommand(encryptionKey, pathToBackup, configFilePath, logDirec
 
 func snapshotCreateCommand(encryptionKey, pathToBackup, configFilePath, logDirectory string) logsafe.Cmd {
 	const (
-		// K10-7350: kube.Exec might timeout after 4h if there is no output from the command
+		// kube.Exec might timeout after 4h if there is no output from the command
 		// Setting it to 1h instead of 1000000h so that kopia logs progress once every hour
 		longUpdateInterval = "1h"
 
