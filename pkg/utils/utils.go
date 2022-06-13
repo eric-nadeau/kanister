@@ -16,9 +16,12 @@ package utils
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
+	"math/big"
 	"os"
 	"strconv"
+	"unicode"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,4 +79,31 @@ func GetEnvAsStringOrDefault(envKey string, def string) string {
 	}
 
 	return def
+}
+
+const (
+	// MinimumAlphaNumericKeyLength is the minimum length of random alphanumeric key allowed to be generated
+	MinimumAlphaNumericKeyLength = 32
+)
+
+// NewRandomAlphaNumericKey returns a new random alphanumeric encryption key with length size
+func NewRandomAlphaNumericKey(size int) ([]byte, error) {
+	if size < MinimumAlphaNumericKeyLength {
+		return nil, errors.New(fmt.Sprintf("Key size %s is too short. Miniumum expected size is %s.", size, MinimumAlphaNumericKeyLength))
+	}
+	var key []byte
+	for len(key) < size {
+		num, err := rand.Int(rand.Reader, big.NewInt(unicode.MaxASCII))
+		if err != nil {
+			return nil, err
+		}
+		r := rune(num.Int64())
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			key = append(key, byte(num.Int64()))
+		}
+	}
+	if size != len(key) {
+		return nil, errors.New("Could not generate new Random Key")
+	}
+	return key, nil
 }
